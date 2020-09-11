@@ -1,0 +1,12 @@
+MOUSEKEY_ENABLE   = no
+UNICODEMAP_ENABLE = no
+TAP_DANCE_ENABLE  = yes
+LEADER_ENABLE     = yes
+
+
+NKRO_ENABLE       = yes
+CONSOLE_ENABLE 	  = no
+COMMAND_ENABLE    = no
+
+LTO_ENABLE	  = yes
+EXTRAFLAGS       +=-flto

@@ -1,0 +1,29 @@
+#define FORCE_NKRO
+#define TAPPING_TERM_PER_KEY
+#define LEADER_PER_KEY_TIMING
+#define LEADER_TIMEOUT 300
+
+
+#define TAPPING_TERM 200
+#define CUSTOM_TAPPING_TERM_FOR_NUMBERS 300
+#define CUSTOM_TAPPING_TERM_FOR_UMLAUTE 400
+
+
+
+//#define RETRO_TAPPING
+// #define LCPO_KEYS KC_LCTL, KC_LSFT, KC_LBRC //lCtrl -> {
+// #define RCPC_KEYS KC_RCTL, KC_RSFT, KC_RBRC //rCtrl -> }
+// #define LAPO_KEYS KC_LALT, KC_LSFT, KC_COMM //lAlt  -> <
+// #define RAPC_KEYS KC_RALT, KC_RSFT, KC_DOT  //rAlt  -> >
+
+//FAST TYPE FIXES
+#define IGNORE_MOD_TAP_INTERRUPT
+#undef PERMISSIVE_HOLD
+#undef PREVENT_STUCK_MODIFIERS
+
+#define TAPPING_FORCE_HOLD //enable repeating by taphold 
+#define TAPPING_FORCE_HOLD_PER_KEY
+
+
+#define NO_ACTION_ONESHOT //disables oneshot mods
+
