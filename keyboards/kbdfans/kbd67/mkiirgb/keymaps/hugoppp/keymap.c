@@ -51,6 +51,7 @@
 #include QMK_KEYBOARD_H
 #include "config.h"
 #include "Texts.h"
+#include <print.h>
 LEADER_EXTERNS();
 
 #define _LONG_PRESS_COMPLEX 15 //basically a layer number, so can't be conflicting with layer number
@@ -64,11 +65,22 @@ static void do_lp_hold(uint16_t keycode, keyrecord_t *record);
 int cur_dance_1t_1h (qk_tap_dance_state_t *state);
 
 
+static bool modLockShiftIgnore = true;
+static bool modLockShift = false;
+void oneshot_locked_mods_changed_user(uint8_t mods) {
+    modLockShift = mods & MOD_MASK_SHIFT;
+}
+void oneshot_mods_changed_user(uint8_t mods) {
+    if (mods & MOD_MASK_SHIFT) modLockShift = false;
+}
 
 enum long_press_codes{
     LP_Auml = LT(_LONG_PRESS_COMPLEX, 0),
     LP_Uuml,
     LP_Ouml,
+    LP_Eeur,
+    LP_Ssz,
+
 
     LP_1,
     LP_2,
@@ -100,8 +112,7 @@ enum long_press_codes{
 enum layer_names {
     l_base,
     l_gaming,
-    //l_fKeys,
-    l_num,
+    l_ger,
     l_fn,
     l_rgb
 };
@@ -121,19 +132,9 @@ enum custom_keycodes {
   C_MIN,
   C_EQL,
   C_EXPL,
-  C_REVERSE_NUMBERS
+  C_REVERSE_NUMBERS,
+  C_CAPS_UNDERSCORE
 };
-
-// const uint32_t PROGMEM unicode_map[] = {
-// 	[AUml]  = 0x00C4,  // Ä
-// 	[aUml]  = 0x00E4,  // ä
-
-// 	[UUml] = 0x00DC,  // Ü
-// 	[uUml] = 0x00FC,  // ü
-
-// 	[OUml]  = 0x00D6, // Ö
-// 	[oUml]  = 0x00F6, // ö
-// };
 
 //Used for advanced tap dance
 typedef struct {
@@ -209,52 +210,48 @@ qk_tap_dance_action_t tap_dance_actions[] = {
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [l_base] = LAYOUT_65_ansi_blocker( /* Base */
-        KC_ESC,           LP_1,     LP_2,     LP_3,     LP_4,   LP_5,  LP_6,    LP_7,         LP_8,         LP_9,         LP_0,     LP_MINS,  LP_EQL,   KC_BSPC,   KC_DEL,
-        KC_TAB,           KC_Q,     KC_W,     KC_E,     KC_R,   KC_T,  KC_Y,    LP_Uuml,      KC_I,         LP_Ouml,      KC_P,     KC_LBRC,  KC_RBRC,  KC_BSLASH, TD_PgUp_Home, 
-        LT(l_fn,KC_BSPC), LP_Auml,  KC_S,     KC_D,     KC_F,   KC_G,  KC_H,    LCTL_T(KC_J), LSFT_T(KC_K), LALT_T(KC_L), KC_SCLN,  KC_QUOT,            KC_ENT,    TD_PgDn_End, 
-        KC_LSHIFT,        KC_Z,     KC_X,     KC_C,     KC_V,   KC_B,  KC_N,    KC_M,         KC_COMM,      KC_DOT,       KC_SLSH,  KC_RSHIFT,		    KC_UP,     TD_PSCREEN_SLEEP,
-        KC_LCTL,          KC_LGUI,  X_LALT_LEAD,            LT(l_fn,KC_SPC),                  X_RALT_LEAD,  KC_RCTRL,                          KC_LEFT, KC_DOWN,   KC_RIGHT
+        KC_GESC,          LP_1,     LP_2,     LP_3,     LP_4,   LP_5,  LP_6,    LP_7,         LP_8,         LP_9,         LP_0,     LP_MINS,  LP_EQL,   KC_BSPC,   KC_INS,
+        KC_TAB,           KC_Q,     KC_W,     KC_E,  KC_R,   KC_T,  KC_Y,    KC_U,      KC_I,         KC_O,      KC_P,     KC_LBRC,  KC_RBRC,  KC_BSLASH, TD(TD_PgUp_Home), 
+        LCTL_T(KC_ENT),   KC_A,     KC_S,   KC_D,     KC_F,   KC_G,  KC_H,    LCTL_T(KC_J), LSFT_T(KC_K), LALT_T(KC_L), KC_SCLN,  KC_QUOT,            KC_ENT,    TD(TD_PgDn_End), 
+        OSM(MOD_LSFT),        KC_Z,     KC_X,     KC_C,     KC_V,   KC_B,  KC_N,    KC_M,         KC_COMM,      KC_DOT,       KC_SLSH,  OSM(MOD_RSFT),		    KC_UP,     TD(TD_PSCREEN_SLEEP),
+        HYPR_T(KC_CAPS),          KC_LGUI,  KC_LALT,            LT(l_fn,KC_SPC),                        KC_LEAD,  KC_RCTRL,                          KC_LEFT, KC_DOWN,   KC_RIGHT
     ),
 
     [l_gaming] = LAYOUT_65_ansi_blocker( /* Gaming, no tapdancing etc */
-        KC_ESC,           KC_1,     KC_2,     KC_3,  KC_4,  KC_5,  KC_6,    KC_7,  KC_8,    KC_9,     KC_0,     KC_MINS,  KC_EQL,  KC_BSPC,   KC_DEL,
+        KC_ESC,           KC_1,     KC_2,     KC_3,  KC_4,  KC_5,  KC_6,    KC_7,  KC_8,    KC_9,     KC_0,     KC_MINS,  KC_EQL,  KC_BSPC,   KC_INS,
         KC_TAB,           KC_Q,     KC_W,     KC_E,  KC_R,  KC_T,  KC_Y,    KC_U,  KC_I,    KC_O,     KC_P,     KC_LBRC,  KC_RBRC, KC_BSLASH, KC_PGUP, 
-        LT(l_fn,KC_BSPC), KC_A,     KC_S,     KC_D,  KC_F,  KC_G,  KC_H,    KC_J,  KC_K,    KC_L,     KC_SCLN,  KC_QUOT,           KC_ENT,    KC_PGDOWN, 
+        LT(l_fn,KC_ENT),  KC_A,     KC_S,     KC_D,  KC_F,  KC_G,  KC_H,    KC_J,  KC_K,    KC_L,     KC_SCLN,  KC_QUOT,           KC_ENT,    KC_PGDOWN, 
         KC_LSHIFT,        KC_Z,     KC_X,     KC_C,  KC_V,  KC_B,  KC_N,    KC_M,  KC_COMM, KC_DOT,   KC_SLSH,  KC_RSHIFT,	   	   KC_UP,     TD_PSCREEN_SLEEP,
-        KC_LCTL,          KC_LGUI,  KC_LALT,                KC_SPC,                KC_RALT, KC_RCTRL,                     KC_LEFT, KC_DOWN,   KC_RIGHT
+        KC_LCTL,          KC_LGUI,  KC_LALT,                KC_SPC,                KC_LEAD, KC_RCTRL,                     KC_LEFT, KC_DOWN,   KC_RIGHT
     ),
 
-    // [l_fKeys] = LAYOUT_65_ansi_blocker( /* F Keys layer, toggle on for debugging */
-    //     _______,        LP_F1,   LP_F2,   LP_F3,  LP_F4,   LP_F5,   LP_F6,   LP_F7,   LP_F8,   LP_F9,   LP_F10,   LP_F11,   LP_F12,  _______, _______,
-    //     _______,       _______,  _______, _______,_______, _______, _______, _______, _______, _______, _______,  _______,  _______, _______, _______,
-    //     _______,       _______,  _______, _______,_______, _______, _______, _______, _______, _______, _______,  _______,           _______, _______,
-    //     _______,       _______,  _______, _______,_______, _______, _______, _______, _______, _______, _______,  _______,           _______, _______,
-    //     _______,       _______,  _______,                  _______,                   _______, _______,           _______,           _______, _______
-    // ),
-
-    [l_num] = LAYOUT_65_ansi_blocker( /* Numpad layer */
+    [l_ger] = LAYOUT_65_ansi_blocker( /* german layer */
         _______,       _______,  _______, _______, _______, _______, _______, _______, _______, _______, _______,        _______,  _______, _______, _______,
-        _______,       _______,  _______, _______, _______, _______, _______, KC_KP_4, KC_KP_5, KC_KP_6, KC_KP_PLUS,     _______,  _______, _______, _______,
-        _______,       _______,  _______, _______, _______, _______, _______, KC_KP_1, KC_KP_2, KC_KP_3, _______,        _______,           _______, _______,
+        _______,       _______,  _______, LP_Eeur, _______, _______, _______, LP_Uuml, _______, LP_Ouml, _______,     _______,  _______, _______, _______,
+        _______,       LP_Auml,  LP_Ssz,  _______, _______, _______, _______, _______, _______, _______, _______,        _______,           _______, _______,
         _______,       _______,  _______, _______, _______, _______, _______, _______, _______, _______, _______,        _______,           _______, _______,
         _______,       _______,  _______,                   _______,                   _______, _______,                 _______,           _______, _______
     ),
 
     [l_fn] = LAYOUT_65_ansi_blocker( /* Fn layer */
-        KC_GRV,        KC_F1,    KC_F2,     KC_F3,   KC_F4,   KC_F5,   KC_F6, KC_F7,          KC_F8,        KC_F9,         KC_F10,   KC_F11,  KC_F12,  _______,   TG(l_rgb),
-        _______,       _______,  KC_HOME,   KC_UP,  KC_END, _______, _______, _______,         _______,     _______,       _______,  _______, _______, _______,   _______,
-        _______,       _______,  KC_LEFT, KC_DOWN,KC_RIGHT, C_MIN  , C_PLS  , X_CTL_BRK,      X_SHIFT_BRK,  X_ALT_BRK,     _______,  _______,          KC_INSERT, _______,
-        _______,       _______,  KC_CUT , KC_COPY, KC_PSTE, C_EQL  , C_EXPL, _______,         _______,      _______,       _______,  _______,          KC_VOLU,   KC_MUTE,
-        _______,       _______,  _______,                   _______,                          _______,      _______,                          KC_MPRV, KC_VOLD,   KC_MNXT
+        KC_GRV,        _______,  _______, _______,  KC_END, _______, _______, _______, _______,  _______,  KC_HOME,  C_CAPS_UNDERSCORE, _______,  KC_DEL,    _______,
+        _______,       _______,  KC_WFWD, KC_PGUP, _______, _______, _______, _______, _______,  _______,  KC_MPLY,  _______, _______, _______,  TG(l_rgb),
+        _______,       _______,  KC_WBAK, KC_PGDN, _______, _______, KC_LEFT, KC_DOWN, KC_UP,    KC_RIGHT, _______,  _______,          KC_INSERT, _______,
+        _______,       _______,  _______, _______, _______, _______, KC_MNXT, KC_MUTE, KC_VOLD,  KC_VOLU,  _______,  _______,          KC_VOLU,  KC_MUTE,
+        _______,       _______,  _______,                   _______,                   _______,  _______,                     KC_MPRV, KC_VOLD,   KC_MNXT
     ),
 
     [l_rgb] = LAYOUT_65_ansi_blocker( /* RGB, RESET layer*/
-        TG(l_rgb),     XXXXXXX,  XXXXXXX,  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  RGB_SPD, RGB_SPI,   RESET,   RGB_MOD,
+        TG(l_rgb),     RGB_M_P,  RGB_M_B,  RGB_M_R, RGB_M_SW,RGB_M_SN,RGB_M_K, RGB_M_X, RGB_M_G, RGB_M_T, XXXXXXX,  RGB_SPD, RGB_SPI,   RESET,   RGB_MOD,
         _______,       XXXXXXX,  XXXXXXX,  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  XXXXXXX, XXXXXXX, XXXXXXX,   RGB_SAI,
-        _______,	   XXXXXXX,  XXXXXXX,  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  XXXXXXX,          EEP_RST,   RGB_SAD,
+        _______,	     XXXXXXX,  XXXXXXX,  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  XXXXXXX,          EEP_RST,   RGB_SAD,
         _______,       XXXXXXX,  XXXXXXX,  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  _______,          RGB_VAI,   RGB_TOG,
-        _______,       _______,  _______,                    _______,                   _______, _______,                    RGB_HUD, RGB_VAD,   RGB_HUI
+        _______,       _______,  _______,                    XXXXXXX,                   _______, _______,                    RGB_HUD, RGB_VAD,   RGB_HUI
     )
+};
+
+void keyboard_post_init_user(void) { // Runs boot tasks for keyboard
+  layer_on(l_ger);
 };
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
@@ -263,24 +260,21 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case LT(_LONG_PRESS_COMPLEX, 0) ... LT(_LONG_PRESS_COMPLEX, 0xff):
             if (record->event.pressed) {
                 if (record->tap.count == 0)
-                    { do_lp_hold(keycode, record); return false; }
+                    {  do_lp_hold(keycode, record); return false; }
                 else
-                    { do_lp_tap(keycode, record); return false; }
+                    {  do_lp_tap(keycode, record); return false; }
             }
-        case C_EXPL: SEND_STRING("!"); return false;
-        case C_EQL: SEND_STRING("="); return false;
-        case C_MIN: SEND_STRING("-"); return false;
-        case C_PLS: SEND_STRING("+"); return false;
-        case KC_SPC:
+        case LT(l_fn,KC_SPC):
             if (record->event.pressed) 
             {
-                if (get_mods() & MOD_MASK_SHIFT) { register_code16(KC_UNDERSCORE); return false; }
-            } 
-            else 
-            {
-                if (get_mods() & MOD_MASK_SHIFT) { unregister_code16(KC_UNDERSCORE); return false; }
+                if (record->tap.count != 0 && (modLockShiftIgnore || !modLockShift) && get_mods() & MOD_MASK_SHIFT) {
+                  tap_code16(KC_UNDERSCORE); return false; 
+                }
             }
             return true;
+        case C_CAPS_UNDERSCORE:
+            if (record->event.pressed)
+                modLockShiftIgnore = !modLockShiftIgnore;
     }
     return true;
 };
@@ -290,20 +284,18 @@ void matrix_scan_user(void) {
     leading = false;
     leader_end();
 
-    SEQ_THREE_KEYS(KC_H, KC_U, KC_G) {
+    SEQ_TWO_KEYS(KC_M, KC_M) {
       SEND_STRING(PRIVATE_MAIL);
     }
-    SEQ_THREE_KEYS(KC_H, KC_U, KC_H) {
+    SEQ_TWO_KEYS(KC_M, KC_N) {
       SEND_STRING(HAW_MAIL);
     }
 
     SEQ_ONE_KEY(KC_COMM) {
-    //   tap_code16(TG(l_fKeys));
       reverse_number_keys = !reverse_number_keys;
-      //tap_code16(C_REVERSE_NUMBERS);
     }
     SEQ_ONE_KEY(KC_DOT) {
-      layer_invert(l_num);
+      layer_invert(l_ger);
     }
     SEQ_ONE_KEY(KC_SLSH) {
       layer_invert(l_gaming);
@@ -317,6 +309,8 @@ bool get_tapping_force_hold(uint16_t keycode, keyrecord_t *record) {
     case LP_Auml:
     case LP_Uuml:
     case LP_Ouml:
+    case LP_Eeur:
+    case LP_Ssz:
       return true;
     default:
       return false;
@@ -324,18 +318,27 @@ bool get_tapping_force_hold(uint16_t keycode, keyrecord_t *record) {
 }
 
 //Tapping term per key. use whole keycode
-uint16_t get_tapping_term(uint16_t keycode) {
+uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
   switch (keycode) {
     case LP_1 ... LP_EQL:
-        return CUSTOM_TAPPING_TERM_FOR_NUMBERS;
+         return CUSTOM_TAPPING_TERM_FOR_NUMBERS;
     case LP_Auml:
     case LP_Ouml:
     case LP_Uuml:
-        return CUSTOM_TAPPING_TERM_FOR_UMLAUTE;
+    case LP_Eeur:
+    case LP_Ssz:
+         return CUSTOM_TAPPING_TERM_FOR_UMLAUTE;
+    case LCTL_T(KC_J):
+    case LSFT_T(KC_K):
+    case LALT_T(KC_L):
+         return CUSTOM_TAPPING_TERM_FOR_MODS;
+
     default:
-        return TAPPING_TERM;
+         return TAPPING_TERM;
   }
 };
+
+
 
 //////////////////////////////////////////////////////////////////////                  Custom Functions                  //////////////////////////////////////////////////////////////////////
 
@@ -347,6 +350,8 @@ uint16_t get_tapping_term(uint16_t keycode) {
                 case LP_1 ... LP_0:     tap_code(keycode - LP_1 + KC_1); return;
                 case LP_MINS:           tap_code(KC_MINS); return;
                 case LP_EQL:            tap_code(KC_EQL); return;  
+                case LP_Ssz:            tap_code(KC_S); return;  
+                case LP_Eeur:            tap_code(KC_E); return;  
             }
         }
         else
@@ -398,9 +403,11 @@ uint16_t get_tapping_term(uint16_t keycode) {
         }
         
         switch(keycode){
-            case LP_Auml:           register_code(KC_RALT);   tap_code(KC_Q);   unregister_code(KC_RALT); return; //Ä
-            case LP_Uuml:           register_code(KC_RALT);   tap_code(KC_Y);   unregister_code(KC_RALT); return; //Ü
-            case LP_Ouml:           register_code(KC_RALT);   tap_code(KC_P);   unregister_code(KC_RALT); return; //Ö
+            case LP_Auml:           register_code(KC_RALT);   tap_code(KC_A);   unregister_code(KC_RALT); return; //Ä
+            case LP_Uuml:           register_code(KC_RALT);   tap_code(KC_U);   unregister_code(KC_RALT); return; //Ü
+            case LP_Ouml:           register_code(KC_RALT);   tap_code(KC_O);   unregister_code(KC_RALT); return; //Ö
+            case LP_Eeur:            register_code(KC_RALT);   tap_code(KC_E);   unregister_code(KC_RALT); return; //Ö
+            case LP_Ssz:             register_code(KC_RALT);   tap_code(KC_1);   unregister_code(KC_RALT); return; //Ö
             // A O U -> Ä Ö Ü
             // case LP_Auml:           process_unicodemap(XP(aUml,AUml), record);    return;
             // case LP_Uuml:           process_unicodemap(XP(aUml,AUml), record);    return;
@@ -425,6 +432,7 @@ uint16_t get_tapping_term(uint16_t keycode) {
         {
             case (1): tap_code(KC_PSCREEN);          break;
             case (2): tap_code(KC_SYSTEM_SLEEP);     break;
+            case (3): tap_code(KC_SYSTEM_POWER);     break;
         }
     };
 

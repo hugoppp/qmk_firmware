@@ -5,8 +5,11 @@ LEADER_ENABLE     = yes
 
 
 NKRO_ENABLE       = yes
-CONSOLE_ENABLE 	  = no
+CONSOLE_ENABLE 	  = yes
 COMMAND_ENABLE    = no
 
 LTO_ENABLE	  = yes
 EXTRAFLAGS       +=-flto
+
+AUTO_SHIFT_ENABLE = no
+KEY_LOCK_ENABLE = yes
