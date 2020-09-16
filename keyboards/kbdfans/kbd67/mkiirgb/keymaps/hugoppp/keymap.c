@@ -133,7 +133,9 @@ enum custom_keycodes {
   C_EQL,
   C_EXPL,
   C_REVERSE_NUMBERS,
-  C_CAPS_UNDERSCORE
+  C_CAPS_UNDERSCORE,
+  C_NLINE,
+  C_VLINE,
 };
 
 //Used for advanced tap dance
@@ -234,11 +236,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
 
     [l_fn] = LAYOUT_65_ansi_blocker( /* Fn layer */
-        KC_GRV,        _______,  _______, _______,  KC_END, _______, _______, _______, _______,  _______,  KC_HOME,  C_CAPS_UNDERSCORE, _______,  KC_DEL,    _______,
-        _______,       _______,  KC_WFWD, KC_PGUP, _______, _______, _______, _______, _______,  _______,  KC_MPLY,  _______, _______, _______,  TG(l_rgb),
-        _______,       _______,  KC_WBAK, KC_PGDN, _______, _______, KC_LEFT, KC_DOWN, KC_UP,    KC_RIGHT, _______,  _______,          KC_INSERT, _______,
-        _______,       _______,  _______, _______, _______, _______, KC_MNXT, KC_MUTE, KC_VOLD,  KC_VOLU,  _______,  _______,          KC_VOLU,  KC_MUTE,
-        _______,       _______,  _______,                   _______,                   _______,  _______,                     KC_MPRV, KC_VOLD,   KC_MNXT
+        KC_GRV,        XXXXXXX,  XXXXXXX, XXXXXXX,  KC_END,       XXXXXXX,        XXXXXXX, XXXXXXX, XXXXXXX,  XXXXXXX,  KC_HOME,  C_CAPS_UNDERSCORE, XXXXXXX,  KC_DEL,    XXXXXXX,
+        XXXXXXX,       XXXXXXX,  KC_WFWD, KC_PGUP, XXXXXXX,       XXXXXXX,        XXXXXXX, XXXXXXX, XXXXXXX,  C_NLINE,  KC_MPLY,  XXXXXXX,           XXXXXXX, XXXXXXX,  TG(l_rgb),
+        XXXXXXX,       XXXXXXX,  KC_WBAK, KC_PGDN, SWIN(KC_LEFT), SWIN(KC_RIGHT), KC_LEFT, KC_DOWN, KC_UP,    KC_RIGHT, XXXXXXX,  XXXXXXX,                    KC_INSERT, XXXXXXX,
+        XXXXXXX,       XXXXXXX,  XXXXXXX, XXXXXXX, C_VLINE,       KC_MPRV,        KC_MNXT, KC_MUTE, KC_VOLD,  KC_VOLU,  XXXXXXX,  XXXXXXX,                    KC_VOLU,  KC_MUTE,
+        XXXXXXX,       XXXXXXX,  XXXXXXX,                         XXXXXXX,                          XXXXXXX,  XXXXXXX,                               KC_MPRV, KC_VOLD,   KC_MNXT
     ),
 
     [l_rgb] = LAYOUT_65_ansi_blocker( /* RGB, RESET layer*/
@@ -275,6 +277,27 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case C_CAPS_UNDERSCORE:
             if (record->event.pressed)
                 modLockShiftIgnore = !modLockShiftIgnore;
+        case C_NLINE:
+            if (record->event.pressed){
+                if (get_mods() & MOD_MASK_SHIFT) {
+                  clear_mods();
+                  unregister_code(MOD_LSFT);
+                  tap_code(KC_HOME);
+                  tap_code(KC_ENTER);
+                  tap_code(KC_UP);
+                }
+                else {
+                  tap_code(KC_END);
+                  tap_code(KC_ENTER);
+                }
+                return false;
+            }
+        case C_VLINE:
+            if (record->event.pressed){
+                tap_code(KC_HOME);
+                tap_code16(S(KC_END));
+            }
+            return false;
     }
     return true;
 };
@@ -321,19 +344,27 @@ bool get_tapping_force_hold(uint16_t keycode, keyrecord_t *record) {
 uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
   switch (keycode) {
     case LP_1 ... LP_EQL:
-         return CUSTOM_TAPPING_TERM_FOR_NUMBERS;
+         return 250;
+         print("term: 250\n");
     case LP_Auml:
     case LP_Ouml:
     case LP_Uuml:
     case LP_Eeur:
     case LP_Ssz:
-         return CUSTOM_TAPPING_TERM_FOR_UMLAUTE;
+         print("term: 275\n");
+         return 275;
     case LCTL_T(KC_J):
     case LSFT_T(KC_K):
     case LALT_T(KC_L):
-         return CUSTOM_TAPPING_TERM_FOR_MODS;
+    case OSM(MOD_LSFT):
+         print("term: 250\n");
+         return 350;
+    case LCTL_T(KC_ENT):
+         print("term: 125\n");
+         return 125;
 
     default:
+         print("term: default\n");
          return TAPPING_TERM;
   }
 };
