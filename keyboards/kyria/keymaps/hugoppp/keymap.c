@@ -47,7 +47,6 @@ enum long_press_codes {
 
 static bool is_shifted(void);
 
-
 enum custom_keycodes {
     KC_CCCV = SAFE_RANGE
 };
@@ -68,10 +67,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *                        `----------------------------------'  `----------------------------------'
  */
     [QWERTY] = LAYOUT(
-      KC_ESC,  KC_Q,   KC_W,   KC_E,   KC_R,   KC_T,                                             KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_PIPE,
-      KC_LSFT, KC_A,   KC_S,   KC_D,   KC_F,   KC_G,                                             KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT,
-      KC_LCTL, KC_Z,   KC_X,   KC_C,   KC_V,   KC_B,   KC_CCCV,   TG(UMLAUTE), KC_DEL,  _______, KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_MINS,
-              KC_SLEP,  KC_LALT, MO(LOWER), MT(MOD_LSFT, KC_SPC), MT(MOD_LALT, KC_ENT), KC_BSPC, LT(NAV, KC_SPC), MO(RAISE), KC_TAB, KC_RALT
+      KC_ESC,  KC_Q,   KC_W,   KC_E,   KC_R,   KC_T,                                                      KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_PIPE,
+      KC_LCTL, KC_A,   KC_S,   KC_D,   KC_F,   KC_G,                                                      KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT,
+      KC_LSFT, KC_Z,   KC_X,   KC_C,   KC_V,   KC_B,   _______,   TG(UMLAUTE),          KC_DEL,  _______, KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_MINS,
+               KC_SLEP,KC_LGUI, MO(LOWER), MT(MOD_LSFT, KC_SPC), MT(MOD_LALT, KC_ENT),  KC_BSPC, LT(NAV, KC_SPC), MO(RAISE), KC_TAB, KC_RALT
     ),
 
     [UMLAUTE] = LAYOUT(
@@ -134,7 +133,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *                        |      |      | Lower|      |      |  |      | Nav  | Raise|      |      |
  *                        `----------------------------------'  `----------------------------------'
  */
-    [NAV] = LAYOUT(//KC_PGDN
+    [NAV] = LAYOUT(
       _______, _______, _______, _______, _______, _______,                                     KC_COPY, KC_UNDO, _______, _______, KC_PSTE, _______,
       _______, _______, _______, _______, _______, _______,                                     KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, _______, KC_CAPS,
       _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, KC_HOME, KC_PGDN, KC_PGUP, KC_END,  _______, _______,
@@ -382,14 +381,14 @@ static void do_lp_tap(uint16_t keycode, keyrecord_t *record) {
 
 static void sendUni(uint16_t keycode);
 static void do_lp_hold(uint16_t keycode, keyrecord_t *record) {
-    switch (keycode) {
-        case LP_Auml:
-        case LP_Uuml:
-        case LP_Ouml:
-        case LP_Ssz:
-            tap_code(KC_RALT);
-            sendUni(keycode);
+    if (keycode >= LP_Auml && keycode <= LP_Ssz){
+        tap_code(KC_RALT);
+        sendUni(keycode);
+        return;
     }
+
+//    switch (keycode) {
+//    }
 }
 
 static void sendUni(uint16_t keycode){
