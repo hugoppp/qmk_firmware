@@ -35,4 +35,3 @@
 #define UNICODE_SELECTED_MODES UC_WINC
 
 //#define NO_ACTION_ONESHOT //disables oneshot mods
-

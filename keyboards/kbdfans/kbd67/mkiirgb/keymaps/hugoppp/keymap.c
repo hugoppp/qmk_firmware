@@ -30,7 +30,7 @@ int cur_dance_1t_1h (qk_tap_dance_state_t *state);
 static bool is_shifted(void);
 
 
-static bool modLockShiftIgnore = true;
+//static bool modLockShiftIgnore = true;
 static bool modLockShift = false;
 static bool alttabActive = false;
 
@@ -68,6 +68,7 @@ enum layer_names {
     l_gaming,
     l_ger,
     l_fn,
+    l_spaceFn,
     l_rgb
 };
 
@@ -78,7 +79,6 @@ enum custom_keycodes {
   C_EQL,
   C_EXPL,
   C_REVERSE_NUMBERS,
-  C_CAPS_UNDERSCORE,
   C_NLINE,
   C_VLINE,
   C_ALTAB,
@@ -138,11 +138,19 @@ const uint32_t PROGMEM unicode_map[] = {
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [l_base] = LAYOUT_65_ansi_blocker( /* Base */
-        KC_GESC,          LP_1,     LP_2,     LP_3,     LP_4,   LP_5,  LP_6,    LP_7,         LP_8,         LP_9,         LP_0,     LP_MINS,  LP_EQL,   KC_BSPC,   KC_INS,
-        KC_TAB,           KC_Q,     KC_W,     LP_Eeur,  KC_R,   KC_T,  KC_Y,    LP_Uuml,      KC_I,         LP_Ouml,      KC_P,     KC_LBRC,  KC_RBRC,  KC_BSLASH, TD(TD_PgUp_Home),
-        KC_ENT,   LP_Auml,     LP_Ssz,  KC_D,     KC_F,   KC_G,  KC_H,    KC_J, KC_K, KC_L, KC_SCLN,  KC_QUOT,            KC_ENT,    TD(TD_PgDn_End),
-        KC_LSFT,    KC_Z,     KC_X,     KC_C,     KC_V,   KC_B,  KC_N,    KC_M,         KC_COMM,      KC_DOT,       KC_SLSH,  KC_RSFT,		    KC_UP,     TD(TD_PSCREEN_SLEEP),
-        KC_LEAD,          KC_LGUI,  KC_LALT,            LT(l_fn,KC_SPC),                        KC_RALT,  KC_RCTRL,                          KC_LEFT, KC_DOWN,   KC_RIGHT
+        KC_GESC,          KC_1,     KC_2,     KC_3,     KC_4,   KC_5,  KC_6,    KC_7,         KC_8,    KC_9,        KC_0,     KC_MINS,  KC_EQL,   KC_BSPC,   KC_INS,
+        KC_TAB,           KC_Q,     KC_W,     KC_E,     KC_R,   KC_T,  KC_Y,    KC_U,         KC_I,    KC_O,        KC_P,     KC_LBRC,  KC_RBRC,  KC_BSLASH, KC_DEL,
+        KC_LCTL,          KC_A,     KC_S,     KC_D,     KC_F,   KC_G,  KC_H,    KC_J, KC_K,   KC_L,    KC_SCLN,     KC_QUOT,                      KC_ENT,    C(KC_GRV),
+        KC_LSFT,          KC_Z,     KC_X,     KC_C,     KC_V,   KC_B,  KC_N,    KC_M,         KC_COMM, KC_DOT,      KC_SLSH,  KC_RSFT,	          KC_UP,     TD(TD_PSCREEN_SLEEP),
+        LT(l_fn,KC_CAPS), KC_LGUI,  KC_LALT,            LT(l_spaceFn,KC_SPC),                 KC_RALT, KC_RCTRL,                         KC_LEFT, KC_DOWN,   KC_RIGHT
+    ),
+
+    [l_fn] = LAYOUT_65_ansi_blocker( /* FN */
+        KC_GRV,    KC_F1,    KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,  KC_F10,   KC_F11,   KC_F12,  KC_DEL,   KC_HOME,
+        _______, _______,  _______, _______, _______, _______, _______, _______, _______, _______, _______,  _______,  _______, _______, TG(l_ger),
+        _______, _______,  _______, _______, _______, _______, _______, _______, _______, _______, _______,  _______,           _______, TG(l_rgb),
+        _______, _______,  _______, _______, _______, _______, _______, _______, _______, _______, _______,  _______,           _______, TG(l_gaming),
+        _______, _______,  _______,                   _______,                   _______, _______,           _______,           _______, _______
     ),
 
     [l_ger] = LAYOUT_65_ansi_blocker( /* german layer */
@@ -154,25 +162,25 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
 
     [l_gaming] = LAYOUT_65_ansi_blocker( /* Gaming, no tapdancing etc */
-        KC_ESC,           KC_1,     KC_2,     KC_3,  KC_4,  KC_5,  KC_6,    KC_7,  KC_8,    KC_9,     KC_0,     KC_MINS,  KC_EQL,  KC_BSPC,   KC_INS,
-        KC_TAB,           KC_Q,     KC_W,     KC_E,  KC_R,  KC_T,  KC_Y,    KC_U,  KC_I,    KC_O,     KC_P,     KC_LBRC,  KC_RBRC, KC_BSLASH, KC_PGUP,
-        LT(l_fn,KC_ENT),  KC_A,     KC_S,     KC_D,  KC_F,  KC_G,  KC_H,    KC_J,  KC_K,    KC_L,     KC_SCLN,  KC_QUOT,           KC_ENT,    KC_PGDOWN,
-        KC_LSHIFT,        KC_Z,     KC_X,     KC_C,  KC_V,  KC_B,  KC_N,    KC_M,  KC_COMM, KC_DOT,   KC_SLSH,  KC_RSHIFT,	   	   KC_UP,     TD_PSCREEN_SLEEP,
-        KC_LCTL,          KC_LGUI,  KC_LALT,                KC_SPC,                KC_RALT, KC_RCTRL,                     KC_LEFT, KC_DOWN,   KC_RIGHT
+        KC_ESC,              KC_1,     KC_2,     KC_3,  KC_4,  KC_5,  KC_6,    KC_7,  KC_8,    KC_9,     KC_0,     KC_MINS,  KC_EQL,  KC_BSPC,   KC_INS,
+        KC_TAB,              KC_Q,     KC_W,     KC_E,  KC_R,  KC_T,  KC_Y,    KC_U,  KC_I,    KC_O,     KC_P,     KC_LBRC,  KC_RBRC, KC_BSLASH, KC_DEL,
+        KC_LCTL,             KC_A,     KC_S,     KC_D,  KC_F,  KC_G,  KC_H,    KC_J,  KC_K,    KC_L,     KC_SCLN,  KC_QUOT,           KC_ENT,    KC_PGDOWN,
+        KC_LSHIFT,           KC_Z,     KC_X,     KC_C,  KC_V,  KC_B,  KC_N,    KC_M,  KC_COMM, KC_DOT,   KC_SLSH,  KC_RSHIFT,         KC_UP,     TD_PSCREEN_SLEEP,
+        LT(l_fn,KC_CAPS),    KC_LGUI,  KC_LALT,                KC_SPC,                KC_RALT, KC_RCTRL,                     KC_LEFT, KC_DOWN,   KC_RIGHT
     ),
 
-    [l_fn] = LAYOUT_65_ansi_blocker( /* Fn layer */
-        KC_GRV,        XXXXXXX,  XXXXXXX, XXXXXXX,  KC_END,       XXXXXXX,        XXXXXXX, XXXXXXX, XXXXXXX,  XXXXXXX,  KC_HOME,  C_CAPS_UNDERSCORE, XXXXXXX,  KC_DEL,    XXXXXXX,
-        C_ALTAB,       XXXXXXX,  KC_WFWD, KC_PGUP, XXXXXXX,       XXXXXXX,        XXXXXXX, XXXXXXX, XXXXXXX,  C_NLINE,  KC_MPLY,  XXXXXXX,           XXXXXXX, XXXXXXX,  TG(l_rgb),
-        _______,       XXXXXXX,  KC_WBAK, KC_PGDN, SWIN(KC_LEFT), SWIN(KC_RIGHT), KC_LEFT, KC_DOWN, KC_UP,    KC_RIGHT, XXXXXXX,  _______,                    KC_INSERT, TG(l_gaming),
+    [l_spaceFn] = LAYOUT_65_ansi_blocker( /* Space Fn layer */
+        KC_GRV,        XXXXXXX,  XXXXXXX, XXXXXXX,  KC_END,       XXXXXXX,        XXXXXXX, XXXXXXX, XXXXXXX,  XXXXXXX,  KC_HOME,  _______, XXXXXXX, _______,  _______,
+        _______,       XXXXXXX,  KC_WFWD, KC_PGUP, XXXXXXX,       XXXXXXX,        XXXXXXX, XXXXXXX, XXXXXXX,  C_NLINE,  KC_MPLY,  XXXXXXX,           XXXXXXX, XXXXXXX,  _______,
+        _______,       XXXXXXX,  KC_WBAK, KC_PGDN, SWIN(KC_LEFT), SWIN(KC_RIGHT), KC_LEFT, KC_DOWN, KC_UP,    KC_RIGHT, XXXXXXX,  _______,                    _______,  _______,
         _______,       XXXXXXX,  XXXXXXX, XXXXXXX, C_VLINE,       KC_MPRV,        KC_MNXT, KC_MUTE, KC_VOLD,  KC_VOLU,  XXXXXXX,  _______,                    KC_VOLU,  KC_MUTE,
-        _______,       _______,  _______,                         _______,                          _______,  _______,                               KC_MPRV, KC_VOLD,   KC_MNXT
+        _______,       _______,  _______,                         _______,                          _______,  _______,                               KC_MPRV, KC_VOLD,  KC_MNXT
     ),
 
     [l_rgb] = LAYOUT_65_ansi_blocker( /* RGB, RESET layer*/
         TG(l_rgb),     RGB_M_P,  RGB_M_B,  RGB_M_R, RGB_M_SW,RGB_M_SN,RGB_M_K, RGB_M_X, RGB_M_G, RGB_M_T, XXXXXXX,  RGB_SPD, RGB_SPI,   RESET,   RGB_MOD,
         _______,       XXXXXXX,  XXXXXXX,  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  XXXXXXX, XXXXXXX, XXXXXXX,   RGB_SAI,
-        _______,	     XXXXXXX,  XXXXXXX,  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  XXXXXXX,          EEP_RST,   RGB_SAD,
+        _______,	   XXXXXXX,  XXXXXXX,  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  XXXXXXX,          EEP_RST,   RGB_SAD,
         _______,       XXXXXXX,  XXXXXXX,  XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  _______,          RGB_VAI,   RGB_TOG,
         _______,       _______,  _______,                    XXXXXXX,                   _______, _______,                    RGB_HUD, RGB_VAD,   RGB_HUI
     )
@@ -218,10 +226,10 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             break;
 
         //switch snake case
-        case C_CAPS_UNDERSCORE:
-            if (record->event.pressed)
-                modLockShiftIgnore = !modLockShiftIgnore;
-            break;
+//        case C_CAPS_UNDERSCORE:
+//            if (record->event.pressed)
+//                modLockShiftIgnore = !modLockShiftIgnore;
+//            break;
 
         //new line below; +shift new line above
         case C_NLINE:
@@ -263,7 +271,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             break;
     }
     return true;
-};
+}
 
 void matrix_scan_user(void) {
   LEADER_DICTIONARY() {
@@ -306,52 +314,52 @@ bool get_tapping_force_hold(uint16_t keycode, keyrecord_t *record) {
 }
 
 //Tapping term per key. use whole keycode
-uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
-  switch (keycode) {
-    case LP_1 ... LP_EQL:
-         /* print("term: 250\n"); */
-         return 200;
+//uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
+//  switch (keycode) {
+//    case LP_1 ... LP_EQL:
+//         /* print("term: 250\n"); */
+//         return 200;
+//
+//    case LP_Auml:
+//    case LP_Ouml:
+//    case LP_Uuml:
+//    case LP_Eeur:
+//    case LP_Ssz:
+//         /* print("term: 250\n"); */
+//         return 350;
+//
+//    case LCTL_T(KC_J):
+//    case RSFT_T(KC_K):
+//    case LSFT_T(KC_D):
+//    case LALT_T(KC_L):
+//    case OSM(MOD_LSFT):
+//         /* print("term: 400\n"); */
+//         return 180;
+//
+//    case LCTL_T(KC_ENT):
+//         /* print("term: 150\n"); */
+//         return 150;
+//
+//    case LT(l_fn,KC_SPC):
+//         /* print("term: 300\n"); */
+//         return 180;
+//
+//    default:
+//         /* print("term: default\n"); */
+//         return TAPPING_TERM;
+//  }
+//}
 
-    case LP_Auml:
-    case LP_Ouml:
-    case LP_Uuml:
-    case LP_Eeur:
-    case LP_Ssz:
-         /* print("term: 250\n"); */
-         return 350;
-
-    case LCTL_T(KC_J):
-    case RSFT_T(KC_K):
-    case LSFT_T(KC_D):
-    case LALT_T(KC_L):
-    case OSM(MOD_LSFT):
-         /* print("term: 400\n"); */
-         return 180;
-
-    case LCTL_T(KC_ENT):
-         /* print("term: 150\n"); */
-         return 150;
-
-    case LT(l_fn,KC_SPC):
-         /* print("term: 300\n"); */
-         return 180;
-
-    default:
-         /* print("term: default\n"); */
-         return TAPPING_TERM;
-  }
-};
-
-bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
-    switch (keycode) {
-        case LT(_LONG_PRESS_COMPLEX, 0) ... LT(_LONG_PRESS_COMPLEX, 0xff):
-            print("------ permmissiv hold false -------\n");
-            return false;
-        default:
-            print("permmissiv hold true\n");
-            return true;
-    }
-}
+//bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
+//    switch (keycode) {
+//        case LT(_LONG_PRESS_COMPLEX, 0) ... LT(_LONG_PRESS_COMPLEX, 0xff):
+//            print("------ permmissiv hold false -------\n");
+//            return false;
+//        default:
+//            print("permmissiv hold true\n");
+//            return true;
+//    }
+//}
 
 
 

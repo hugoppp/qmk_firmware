@@ -48,7 +48,8 @@ enum long_press_codes {
 static bool is_shifted(void);
 
 enum custom_keycodes {
-    KC_CCCV = SAFE_RANGE
+    VIM_O = SAFE_RANGE,
+    VIM_V
 };
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -70,7 +71,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
       KC_ESC,  KC_Q,   KC_W,   KC_E,   KC_R,   KC_T,                                                      KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_PIPE,
       KC_LCTL, KC_A,   KC_S,   KC_D,   KC_F,   KC_G,                                                      KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT,
       KC_LSFT, KC_Z,   KC_X,   KC_C,   KC_V,   KC_B,   _______,   TG(UMLAUTE),          KC_DEL,  _______, KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_MINS,
-               KC_SLEP,KC_LGUI, MO(LOWER), MT(MOD_LSFT, KC_SPC), MT(MOD_LALT, KC_ENT),  KC_BSPC, LT(NAV, KC_SPC), MO(RAISE), KC_TAB, KC_RALT
+               KC_SLEP,KC_LGUI, TT(LOWER), MT(MOD_LSFT, KC_SPC), MT(MOD_LALT, KC_ENT),  KC_BSPC, TG(NAV), TT(RAISE), KC_TAB, KC_RALT
     ),
 
     [UMLAUTE] = LAYOUT(
@@ -134,10 +135,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *                        `----------------------------------'  `----------------------------------'
  */
     [NAV] = LAYOUT(
-      _______, _______, _______, _______, _______, _______,                                     KC_COPY, KC_UNDO, _______, _______, KC_PSTE, _______,
-      _______, _______, _______, _______, _______, _______,                                     KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, _______, KC_CAPS,
-      _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, KC_HOME, KC_PGDN, KC_PGUP, KC_END,  _______, _______,
-                                 _______, _______, _______, _______, _______, _______, _______, _______, _______, _______
+      _______, XXXXXXX, C(KC_RGHT), XXXXXXX, XXXXXXX, XXXXXXX,                                              KC_COPY, KC_UNDO, TG(NAV), VIM_O,   KC_PSTE, XXXXXXX,
+      _______, XXXXXXX, XXXXXXX,    XXXXXXX, XXXXXXX, XXXXXXX,                                              KC_LEFT, KC_DOWN, KC_UP,   KC_RGHT, XXXXXXX, KC_CAPS,
+      _______, XXXXXXX, XXXXXXX,    XXXXXXX, VIM_V,   C(S(KC_LEFT)), XXXXXXX,    XXXXXXX, XXXXXXX, XXXXXXX, KC_HOME, KC_PGDN, KC_PGUP, KC_END,  XXXXXXX, XXXXXXX,
+                                    _______, _______, _______,       _______,    _______, _______, _______, _______, _______, _______
     ),
 /*
  * Adjust Layer
@@ -187,19 +188,59 @@ layer_state_t layer_state_set_user(layer_state_t state) {
     return update_tri_layer_state(state, LOWER, RAISE, ADJUST);
 }
 
+static bool vimShiftV = false;
+static bool vimShiftVBlock = false;
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
-//        case KC_CCCV:  // One key copy/paste
-//            if (record->event.pressed) {
-//                copy_paste_timer = timer_read();
-//            } else {
-//                if (timer_elapsed(copy_paste_timer) > TAPPING_TERM) {  // Hold, copy
-//                    tap_code16(LCTL(KC_C));
-//                } else { // Tap, paste
-//                    tap_code16(LCTL(KC_V));
-//                }
-//            }
-//            break;
+        //vim O emulation
+        case VIM_O:
+            if (vimShiftV)
+                return false;
+            if (is_shifted()){
+                tap_code(KC_HOME);
+                tap_code(KC_ENTER);
+                tap_code(KC_UP);
+            } else{
+                tap_code(KC_END);
+                tap_code(KC_ENTER);
+            }
+            return false;
+
+        //vim V emulation
+        case VIM_V:
+            vimShiftV = true;
+            if (is_shifted()){
+                vimShiftVBlock = true;
+                tap_code(KC_HOME);
+                register_code(KC_LSHIFT);
+                tap_code(KC_END);
+            }
+            else {
+                register_code(KC_LSHIFT);
+            }
+            return false;
+        case KC_ESC:
+            if (vimShiftV){
+                unregister_code(KC_LSHIFT);
+                vimShiftV = false;
+                vimShiftVBlock = false;
+                return false;
+            }
+            return true;
+        case KC_UP:
+            if (vimShiftVBlock){
+                tap_code(KC_UP);
+                tap_code(KC_END);
+                return false;
+            }
+            return true;
+        case KC_DOWN:
+            if (vimShiftVBlock){
+                tap_code(KC_DOWN);
+                tap_code(KC_END);
+                return false;
+            }
+            return true;
 
         //short/long press
         case LT(_LONG_PRESS_COMPLEX, 0) ... LT(_LONG_PRESS_COMPLEX, 0xff):
@@ -217,10 +258,14 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             }
             break;
     }
+
+    if (vimShiftV){
+        unregister_code(KC_LSHIFT);
+        vimShiftV = false;
+        vimShiftVBlock = false;
+    }
     return true;
 }
-
-
 
 void matrix_scan_user(void) {
 
@@ -282,16 +327,15 @@ static void render_status(void) {
     switch (get_highest_layer(layer_state)) {
         case QWERTY:
         case UMLAUTE:
+        case NAV:
             oled_write_P(PSTR("Default\n"), false);
+//            oled_write_P(PSTR("Navigation\n"), false);
             break;
         case LOWER:
             oled_write_P(PSTR("Lower\n"), false);
             break;
         case RAISE:
             oled_write_P(PSTR("Raise\n"), false);
-            break;
-        case NAV:
-            oled_write_P(PSTR("Navigation\n"), false);
             break;
         case ADJUST:
             oled_write_P(PSTR("Adjust\n"), false);
@@ -307,7 +351,14 @@ static void render_status(void) {
 
     oled_write_P(biton32(layer_state) == UMLAUTE               ? PSTR("UMLAUT ") : PSTR("       "), false);
     oled_write_P(IS_LED_ON(led_usb_state, USB_LED_CAPS_LOCK)   ? PSTR("CAPLCK ") : PSTR("       "), false);
-    oled_write_P(IS_LED_ON(led_usb_state, USB_LED_NUM_LOCK)    ? PSTR("NUMLCK ") : PSTR("       "), false);
+    if (vimShiftV){
+        oled_write_P(vimShiftVBlock ? PSTR("VLINE  ") : PSTR("VISUAL "), false);
+    }
+    else {
+        oled_write_P(get_highest_layer(layer_state) == NAV     ? PSTR("NORMAL ") : PSTR(" INSERT "), false);
+    }
+
+//    oled_write_P(IS_LED_ON(led_usb_state, USB_LED_NUM_LOCK)    ? PSTR("NUMLCK ") : PSTR("       "), false);
 //    oled_write_P(IS_LED_ON(led_usb_state, USB_LED_SCROLL_LOCK) ? PSTR("SCRLCK ") : PSTR("       "), false);
 }
 
@@ -317,7 +368,6 @@ void oled_task_user(void) {
         #ifdef WPMCAT
         render_anim();
         oled_set_cursor(0,6);
-
 
         oled_write(PSTR("WPM: "),false);
         //TODO
