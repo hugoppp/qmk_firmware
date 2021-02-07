@@ -154,11 +154,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
 
     [l_ger] = LAYOUT_65_ansi_blocker( /* german layer */
-        _______,       _______,  _______, _______, _______, _______, _______, _______, _______, _______, _______,        _______,  _______, _______, _______,
-        _______,       _______,  _______, LP_Eeur, _______, _______, _______, LP_Uuml, _______, LP_Ouml, _______,     _______,  _______, _______, _______,
-        _______,       LP_Auml,  LP_Ssz,  _______, _______, _______, _______, _______, _______, _______, _______,        _______,           _______, _______,
-        _______,       _______,  _______, _______, _______, _______, _______, _______, _______, _______, _______,        _______,           _______, _______,
-        _______,       _______,  _______,                   _______,                   _______, _______,                 _______,           _______, _______
+        _______, _______,  _______, _______, _______, _______, _______, _______, _______, _______, _______,        _______,  _______, _______, _______,
+        _______, _______,  _______, LP_Eeur, _______, _______, _______, LP_Uuml, _______, LP_Ouml, _______,     _______,  _______, _______, _______,
+        _______, LP_Auml,  LP_Ssz,  _______, _______, _______, _______, _______, _______, _______, _______,        _______,           _______, _______,
+        _______, _______,  _______, _______, _______, _______, _______, _______, _______, _______, _______,        _______,           _______, _______,
+        _______, _______,  _______,                   _______,                   _______, _______,                 _______,           _______, _______
     ),
 
     [l_gaming] = LAYOUT_65_ansi_blocker( /* Gaming, no tapdancing etc */
@@ -170,11 +170,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
 
     [l_spaceFn] = LAYOUT_65_ansi_blocker( /* Space Fn layer */
-        KC_GRV,        XXXXXXX,  XXXXXXX, XXXXXXX,  KC_END,       XXXXXXX,        XXXXXXX, XXXXXXX, XXXXXXX,  XXXXXXX,  KC_HOME,  _______, XXXXXXX, _______,  _______,
-        _______,       XXXXXXX,  KC_WFWD, KC_PGUP, XXXXXXX,       XXXXXXX,        XXXXXXX, XXXXXXX, XXXXXXX,  C_NLINE,  KC_MPLY,  XXXXXXX,           XXXXXXX, XXXXXXX,  _______,
-        _______,       XXXXXXX,  KC_WBAK, KC_PGDN, SWIN(KC_LEFT), SWIN(KC_RIGHT), KC_LEFT, KC_DOWN, KC_UP,    KC_RIGHT, XXXXXXX,  _______,                    _______,  _______,
-        _______,       XXXXXXX,  XXXXXXX, XXXXXXX, C_VLINE,       KC_MPRV,        KC_MNXT, KC_MUTE, KC_VOLD,  KC_VOLU,  XXXXXXX,  _______,                    KC_VOLU,  KC_MUTE,
-        _______,       _______,  _______,                         _______,                          _______,  _______,                               KC_MPRV, KC_VOLD,  KC_MNXT
+        KC_GRV,   XXXXXXX,  XXXXXXX, XXXXXXX, KC_END,  XXXXXXX,        XXXXXXX, XXXXXXX, XXXXXXX,  XXXXXXX,  KC_HOME,  _______,  XXXXXXX, _______,  _______,
+        _______,  XXXXXXX,  KC_WFWD, KC_PGUP, XXXXXXX, XXXXXXX,        XXXXXXX, XXXXXXX, XXXXXXX,  C_NLINE,  KC_MPLY,  XXXXXXX,  XXXXXXX, XXXXXXX,  _______,
+        _______,  XXXXXXX,  KC_WBAK, KC_PGDN, KC_ENT,  SWIN(KC_RIGHT), KC_LEFT, KC_DOWN, KC_UP,    KC_RIGHT, XXXXXXX,  _______,           _______,  _______,
+        _______,  XXXXXXX,  XXXXXXX, XXXXXXX, C_VLINE, KC_MPRV,        KC_MNXT, KC_MUTE, KC_VOLD,  KC_VOLU,  XXXXXXX,  _______,           KC_VOLU,  KC_MUTE,
+        _______,  _______,  _______,                   _______,                          _______,  _______,                      KC_MPRV, KC_VOLD,  KC_MNXT
     ),
 
     [l_rgb] = LAYOUT_65_ansi_blocker( /* RGB, RESET layer*/
