@@ -14,25 +14,16 @@
 
 #include QMK_KEYBOARD_H
 #include "config.h"
-#include "Texts.h"
 //#include <print.h>
-LEADER_EXTERNS();
 
 #define _LONG_PRESS_COMPLEX 15 //basically a layer number, so can't be conflicting with layer number
 
 bool reverse_number_keys = false;
 
-//tap hold prototypes
-static void do_lp_tap(uint16_t keycode, keyrecord_t *record);
-static void do_lp_hold(uint16_t keycode, keyrecord_t *record);
 //advanced tap dance prototypes
 int cur_dance_1t_1h (qk_tap_dance_state_t *state);
-static bool is_shifted(void);
 
-
-//static bool modLockShiftIgnore = true;
 static bool modLockShift = false;
-static bool alttabActive = false;
 
 void oneshot_locked_mods_changed_user(uint8_t mods) {
     modLockShift = mods & MOD_MASK_SHIFT;
@@ -40,49 +31,6 @@ void oneshot_locked_mods_changed_user(uint8_t mods) {
 void oneshot_mods_changed_user(uint8_t mods) {
     if (mods & MOD_MASK_SHIFT) modLockShift = false;
 }
-
-enum long_press_codes{
-    LP_Auml = LT(_LONG_PRESS_COMPLEX, 0),
-    LP_Uuml,
-    LP_Ouml,
-    LP_Eeur,
-    LP_Ssz,
-
-
-    LP_1,
-    LP_2,
-    LP_3,
-    LP_4,
-    LP_5,
-    LP_6,
-    LP_7,
-    LP_8,
-    LP_9,
-    LP_0,
-    LP_MINS,
-    LP_EQL,
-};
-
-enum layer_names {
-    l_base,
-    l_gaming,
-    l_ger,
-    l_fn,
-    l_spaceFn,
-    l_rgb
-};
-
-enum custom_keycodes {
-  TEST = SAFE_RANGE,
-  C_PLS,
-  C_MIN,
-  C_EQL,
-  C_EXPL,
-  C_REVERSE_NUMBERS,
-  C_NLINE,
-  C_VLINE,
-  C_ALTAB,
-};
 
 //Used for advanced tap dance
 typedef struct {
@@ -117,24 +65,20 @@ qk_tap_dance_action_t tap_dance_actions[] = {
   [TD_PSCREEN_SLEEP] = ACTION_TAP_DANCE_FN (print_sleep),
 };
 
-enum unicode_names {
-    Au,
-    au,
-    Ou,
-    ou,
-    Uu,
-    uu
+
+enum layer_names {
+    l_base,
+    l_gaming,
+    l_fn,
+    l_spaceFn,
+    l_rgb
 };
 
-const uint32_t PROGMEM unicode_map[] = {
-    [Au] =  0x00E4,
-    [au] = 0x00C4,
-    [Ou] = 0x00D6,
-    [Ou] = 0x00F6,
-    [Uu] = 0x00D6,
-    [Uu] = 0x00FC
+enum custom_keycodes {
+    TEST = SAFE_RANGE,
+    C_NLINE,
+    C_VLINE,
 };
-
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [l_base] = LAYOUT_65_ansi_blocker( /* Base */
@@ -147,18 +91,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
     [l_fn] = LAYOUT_65_ansi_blocker( /* FN */
         KC_GRV,    KC_F1,    KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,  KC_F10,   KC_F11,   KC_F12,  KC_DEL,   KC_HOME,
-        _______, _______,  _______, _______, _______, _______, _______, _______, _______, _______, _______,  _______,  _______, _______, TG(l_ger),
+        _______, _______,  _______, _______, _______, _______, _______, _______, _______, _______, _______,  _______,  _______, _______, _______,
         _______, _______,  _______, _______, _______, _______, _______, _______, _______, _______, _______,  _______,           _______, TG(l_rgb),
         _______, _______,  _______, _______, _______, _______, _______, _______, _______, _______, _______,  _______,           _______, TG(l_gaming),
         _______, _______,  _______,                   _______,                   _______, _______,           _______,           _______, _______
-    ),
-
-    [l_ger] = LAYOUT_65_ansi_blocker( /* german layer */
-        _______, _______,  _______, _______, _______, _______, _______, _______, _______, _______, _______,        _______,  _______, _______, _______,
-        _______, _______,  _______, LP_Eeur, _______, _______, _______, LP_Uuml, _______, LP_Ouml, _______,     _______,  _______, _______, _______,
-        _______, LP_Auml,  LP_Ssz,  _______, _______, _______, _______, _______, _______, _______, _______,        _______,           _______, _______,
-        _______, _______,  _______, _______, _______, _______, _______, _______, _______, _______, _______,        _______,           _______, _______,
-        _______, _______,  _______,                   _______,                   _______, _______,                 _______,           _______, _______
     ),
 
     [l_gaming] = LAYOUT_65_ansi_blocker( /* Gaming, no tapdancing etc */
@@ -170,11 +106,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
 
     [l_spaceFn] = LAYOUT_65_ansi_blocker( /* Space Fn layer */
-        KC_GRV,   XXXXXXX,  XXXXXXX, XXXXXXX, KC_END,  XXXXXXX,        XXXXXXX, XXXXXXX, XXXXXXX,  XXXXXXX,  KC_HOME,  _______,  XXXXXXX, _______,  _______,
-        _______,  XXXXXXX,  KC_WFWD, KC_PGUP, XXXXXXX, XXXXXXX,        XXXXXXX, XXXXXXX, XXXXXXX,  C_NLINE,  KC_MPLY,  XXXXXXX,  XXXXXXX, XXXXXXX,  _______,
-        _______,  XXXXXXX,  KC_WBAK, KC_PGDN, KC_ENT,  SWIN(KC_RIGHT), KC_LEFT, KC_DOWN, KC_UP,    KC_RIGHT, XXXXXXX,  _______,           _______,  _______,
-        _______,  XXXXXXX,  XXXXXXX, XXXXXXX, C_VLINE, KC_MPRV,        KC_MNXT, KC_MUTE, KC_VOLD,  KC_VOLU,  XXXXXXX,  _______,           KC_VOLU,  KC_MUTE,
-        _______,  _______,  _______,                   _______,                          _______,  _______,                      KC_MPRV, KC_VOLD,  KC_MNXT
+        KC_GRV,   XXXXXXX,       XXXXXXX,       XXXXXXX, KC_END,  XXXXXXX,        XXXXXXX, XXXXXXX, XXXXXXX,  XXXXXXX,  KC_HOME,  _______,  XXXXXXX, _______,  _______,
+        _______,  XXXXXXX,       KC_WFWD,       KC_PGUP, XXXXXXX, XXXXXXX,        XXXXXXX, XXXXXXX, XXXXXXX,  C_NLINE,  KC_MPLY,  XXXXXXX,  XXXXXXX, XXXXXXX,  _______,
+        _______,  XXXXXXX,       KC_WBAK,       KC_PGDN, KC_ENT,  KC_BSPC,        KC_LEFT, KC_DOWN, KC_UP,    KC_RIGHT, XXXXXXX,  _______,           _______,  _______,
+        _______,  C(G(KC_LEFT)), C(G(KC_RGHT)), XXXXXXX, C_VLINE, KC_MPRV,        KC_MNXT, KC_MUTE, KC_VOLD,  KC_VOLU,  XXXXXXX,  _______,           KC_VOLU,  KC_MUTE,
+        _______,  _______,       _______,                         _______,                          _______,  _______,                      KC_MPRV, KC_VOLD,  KC_MNXT
     ),
 
     [l_rgb] = LAYOUT_65_ansi_blocker( /* RGB, RESET layer*/
@@ -192,45 +128,6 @@ void keyboard_post_init_user(void) { // Runs boot tasks for keyboard
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
-
-        //COMPLEX SHORT LONG PRESS
-        case LT(_LONG_PRESS_COMPLEX, 0) ... LT(_LONG_PRESS_COMPLEX, 0xff):
-            if (record->event.pressed) {
-                if (record->tap.count == 0)
-                    {
-                      do_lp_hold(keycode, record);
-                      return false;
-                    }
-                else
-                    {
-                      do_lp_tap(keycode, record);
-                      return false;
-                    }
-            }
-            break;
-
-        //snake case with shift tap hold
-        case LT(l_fn,KC_SPC):
-            if (record->event.pressed)
-            {
-                /* if (record->tap.count != 0 && (modLockShiftIgnore || !modLockShift) && get_mods() & MOD_MASK_SHIFT) { */
-                /*   tap_code16(KC_UNDERSCORE); */
-                /*   return false; */
-                /* } */
-            } else {
-              if (alttabActive){
-                unregister_code(KC_LALT);
-                alttabActive = false;
-              }
-            }
-            break;
-
-        //switch snake case
-//        case C_CAPS_UNDERSCORE:
-//            if (record->event.pressed)
-//                modLockShiftIgnore = !modLockShiftIgnore;
-//            break;
-
         //new line below; +shift new line above
         case C_NLINE:
             if (record->event.pressed){
@@ -254,190 +151,15 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             if (record->event.pressed){
                 tap_code(KC_HOME);
                 tap_code16(S(KC_END));
+                tap_code16(S(KC_RIGHT));
                 return false;
-            }
-            break;
-
-      case C_ALTAB:
-            if (record->event.pressed) {
-              if (!alttabActive) {
-                alttabActive = true;
-                register_code(KC_LALT);
-              }
-              register_code(KC_TAB);
-            } else {
-              unregister_code(KC_TAB);
             }
             break;
     }
     return true;
 }
 
-void matrix_scan_user(void) {
-  LEADER_DICTIONARY() {
-    leading = false;
-    leader_end();
-
-    SEQ_TWO_KEYS(KC_M, KC_M) {
-      SEND_STRING(PRIVATE_MAIL);
-    }
-    SEQ_TWO_KEYS(KC_M, KC_N) {
-      SEND_STRING(HAW_MAIL);
-    }
-
-    SEQ_ONE_KEY(KC_COMM) {
-      reverse_number_keys = !reverse_number_keys;
-    }
-    SEQ_ONE_KEY(KC_DOT) {
-      layer_invert(l_ger);
-    }
-    SEQ_ONE_KEY(KC_SLSH) {
-      layer_invert(l_gaming);
-    }
-  }
-}
-
-//Auto repeat on 1x tap 1x hold
-bool get_tapping_force_hold(uint16_t keycode, keyrecord_t *record) {
-  switch (keycode) {
-    /* case LP_Auml: */
-    /* case LP_Uuml: */
-    /* case LP_Ouml: */
-    /* case LP_Eeur: */
-    /* case LP_Ssz: */
-    case LT(_LONG_PRESS_COMPLEX, 0) ... LT(_LONG_PRESS_COMPLEX, 0xff):
-      print ("fore hold yes\n");
-      return true;
-    default:
-      return false;
-  }
-}
-
-//Tapping term per key. use whole keycode
-//uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
-//  switch (keycode) {
-//    case LP_1 ... LP_EQL:
-//         /* print("term: 250\n"); */
-//         return 200;
-//
-//    case LP_Auml:
-//    case LP_Ouml:
-//    case LP_Uuml:
-//    case LP_Eeur:
-//    case LP_Ssz:
-//         /* print("term: 250\n"); */
-//         return 350;
-//
-//    case LCTL_T(KC_J):
-//    case RSFT_T(KC_K):
-//    case LSFT_T(KC_D):
-//    case LALT_T(KC_L):
-//    case OSM(MOD_LSFT):
-//         /* print("term: 400\n"); */
-//         return 180;
-//
-//    case LCTL_T(KC_ENT):
-//         /* print("term: 150\n"); */
-//         return 150;
-//
-//    case LT(l_fn,KC_SPC):
-//         /* print("term: 300\n"); */
-//         return 180;
-//
-//    default:
-//         /* print("term: default\n"); */
-//         return TAPPING_TERM;
-//  }
-//}
-
-//bool get_permissive_hold(uint16_t keycode, keyrecord_t *record) {
-//    switch (keycode) {
-//        case LT(_LONG_PRESS_COMPLEX, 0) ... LT(_LONG_PRESS_COMPLEX, 0xff):
-//            print("------ permmissiv hold false -------\n");
-//            return false;
-//        default:
-//            print("permmissiv hold true\n");
-//            return true;
-//    }
-//}
-
-
-
 //////////////////////////////////////////////////////////////////////                  Custom Functions                  //////////////////////////////////////////////////////////////////////
-
-///     SHORT LONG PRESS     ///
-    static void do_lp_tap(uint16_t keycode, keyrecord_t *record) {
-        if (!reverse_number_keys){
-            // number -> number
-            switch (keycode){
-                case LP_1 ... LP_0:     tap_code(keycode - LP_1 + KC_1); return;
-                case LP_MINS:           tap_code(KC_MINS); return;
-                case LP_EQL:            tap_code(KC_EQL); return;
-                case LP_Ssz:            tap_code(KC_S); return;
-                case LP_Eeur:            tap_code(KC_E); return;
-            }
-        }
-        else
-        {
-            // number -> fkey
-            switch (keycode){
-                case LP_1 ... LP_0:     tap_code(keycode - LP_1 + KC_F1); return;
-                case LP_MINS:           tap_code(KC_F11); return;
-                case LP_EQL:            tap_code(KC_F12); return;
-            }
-        }
-
-        switch (keycode) {
-            // A O U -> A O U
-            case LP_Auml:           tap_code(KC_A);    return;
-            case LP_Uuml:           tap_code(KC_U);    return;
-            case LP_Ouml:           tap_code(KC_O);    return;
-        }
-    };
-
-    static void do_lp_hold(uint16_t keycode, keyrecord_t *record) {
-        if (reverse_number_keys){
-            // number -> number
-            switch (keycode)
-            {
-                case LP_1 ... LP_0:     tap_code(keycode - LP_1 + KC_1); return;
-                case LP_MINS:           tap_code(KC_MINS); return;
-                case LP_EQL:            tap_code(KC_EQL); return;
-            }
-        }
-        else
-        {
-            // number -> fkey
-            switch (keycode){
-                case LP_1 ... LP_0:    tap_code(keycode - LP_1 + KC_F1); return;
-                case LP_MINS:          tap_code(KC_F11); return;
-                case LP_EQL:           tap_code(KC_F12); return;
-            }
-        }
-
-        switch(keycode){
-            case LP_Auml:
-                if (is_shifted())
-                    send_unicode_string("Ä");
-                else
-                    send_unicode_string("ä");           /*register_code(KC_RALT);   tap_code(KC_A);   unregister_code(KC_RALT); return; //Ä*/
-                return;
-            case LP_Uuml:
-                if (is_shifted())
-                    send_unicode_string("Ü");
-                else
-                    send_unicode_string("ü");          /*register_code(KC_RALT);   tap_code(KC_U);   unregister_code(KC_RALT); return; //Ü*/
-                return;
-            case LP_Ouml:
-                if (is_shifted())
-                    send_unicode_string("Ö");
-                else
-                    send_unicode_string("ö");          /*register_code(KC_RALT);   tap_code(KC_O);   unregister_code(KC_RALT); return; //Ö*/
-                return;
-            case LP_Eeur: send_unicode_string("€"); return;          /* register_code(KC_RALT);   tap_code(KC_E);   unregister_code(KC_RALT); return; //Ö*/
-            case LP_Ssz:  send_unicode_string("ß"); return;          /* register_code(KC_RALT);   tap_code(KC_1);   unregister_code(KC_RALT); return; //Ö*/
-        }
-    };
 
 ///  Custom Tap Dances  ///
     // 1x = leadr, 2x = print, 3x = sleep //
@@ -449,14 +171,6 @@ bool get_tapping_force_hold(uint16_t keycode, keyrecord_t *record) {
             case (3): tap_code(KC_SYSTEM_POWER);     break;
         }
     };
-
-///  Custom Advanced Tap Dances  ///
-    /*instanalize an instance of 'tap' for the 'x' tap dance. */
-    /* static tap xtap_state = { */
-    /* .is_press_action = true, */
-    /* .state = 0 */
-    /* }; */
-
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^           Custom Functions             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 //////////////////////////////////////////////////////////////////////           Advanced Tap Dance           //////////////////////////////////////////////////////////////////////
@@ -465,10 +179,3 @@ int cur_dance_1t_1h (qk_tap_dance_state_t *state) {
     else return SINGLE_HOLD;
 };
 
-
-// helper function
- static bool is_shifted(){
-     bool shift = get_mods() & MOD_MASK_SHIFT;
-     bool caps = IS_HOST_LED_ON(USB_LED_CAPS_LOCK);
-     return shift || caps;
- }
